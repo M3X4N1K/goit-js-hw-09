@@ -1,1 +1,1 @@
-{"version":3,"file":"2-form.js","sources":["../src/js/2-form.js"],"sourcesContent":["console.log('Form');"],"names":[],"mappings":"wFAAA,QAAQ,IAAI,MAAM"}
+{"version":3,"file":"2-form.js","sources":["../src/js/2-form.js"],"sourcesContent":["console.log('Form');\n\nconst form = document.querySelector('.feedback-form');\nconst STORAGE_KEY = 'feedback-form-state';\n\nlet formData = {\n  email: '',\n  message: '',\n};\n"],"names":[],"mappings":"wFAAA,QAAQ,IAAI,MAAM,EAEL,SAAS,cAAc,gBAAgB"}
