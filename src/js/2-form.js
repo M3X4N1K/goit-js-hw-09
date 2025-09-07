@@ -1,5 +1,3 @@
-console.log('Form');
-
 const form = document.querySelector('.feedback-form');
 const STORAGE_KEY = 'feedback-form-state';
 
@@ -8,7 +6,7 @@ let formData = {
   message: '',
 };
 
-
+// --- helpers ---
 const debounce = (fn, delay = 300) => {
   let t;
   return (...args) => {
@@ -28,25 +26,16 @@ const safeGet = (key) => {
 const safeSet = (key, value) => {
   try {
     localStorage.setItem(key, value);
-  } catch {
-    
-  }
+  } catch {}
 };
 
 const safeRemove = (key) => {
   try {
     localStorage.removeItem(key);
-  } catch {
-    // ignore
-  }
+  } catch {}
 };
 
-const isValidEmail = (email) => {
-  
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
-
-
+// --- restore state from localStorage ---
 function restoreFormState() {
   const raw = safeGet(STORAGE_KEY);
   if (!raw) return;
@@ -57,71 +46,52 @@ function restoreFormState() {
       formData.email = typeof data.email === 'string' ? data.email : '';
       formData.message = typeof data.message === 'string' ? data.message : '';
 
-      const emailInput = form.querySelector('input[name="email"]');
-      const messageTextarea = form.querySelector('textarea[name="message"]');
-
-      if (emailInput) emailInput.value = formData.email;
-      if (messageTextarea) messageTextarea.value = formData.message;
+      form.elements.email.value = formData.email;
+      form.elements.message.value = formData.message;
     }
   } catch {
-   
     safeRemove(STORAGE_KEY);
   }
 }
 
-
+// --- save state (debounced) ---
 const saveStateDebounced = debounce(() => {
   safeSet(STORAGE_KEY, JSON.stringify(formData));
 }, 300);
 
-
+// --- bind events ---
 if (form) {
   restoreFormState();
 
   form.addEventListener('input', (e) => {
-    const target = e.target;
-    if (!target || !target.name) return;
+    const { name, value } = e.target;
+    if (!(name in formData)) return;
 
-    if (target.name in formData) {
-      formData[target.name] = target.value;
-      saveStateDebounced();
-    }
+    formData[name] = value.trim();
+    saveStateDebounced();
   });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const emailInput = form.querySelector('input[name="email"]');
-    const messageTextarea = form.querySelector('textarea[name="message"]');
-
-    const email = (emailInput?.value || '').trim();
-    const message = (messageTextarea?.value || '').trim();
-
-    if (!email || !message) {
-      alert('Будь ласка, заповніть і Email, і Message.');
-      if (!email) emailInput?.focus();
-      else messageTextarea?.focus();
+    if (!formData.email || !formData.message) {
+      alert('Fill please all fields');
       return;
     }
 
-    if (!isValidEmail(email)) {
-      alert('Будь ласка, вкажіть коректний email.');
-      emailInput?.focus();
-      return;
-    }
+    // ✅ Виводимо саме глобальний formData
+    console.log(formData);
 
-   
-    console.log('Submitted data:', { email, message });
-
- 
+    // очищення
     form.reset();
     safeRemove(STORAGE_KEY);
-    formData = { email: '', message: '' };
+    formData.email = '';
+    formData.message = '';
   });
-
 
   form.addEventListener('reset', () => {
     safeRemove(STORAGE_KEY);
-    formData = { email: '', message: '' };
+    formData.email = '';
+    formData.message = '';
   });
 }
